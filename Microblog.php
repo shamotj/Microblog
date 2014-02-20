@@ -7,8 +7,13 @@ use Neonus\Microblog\Post;
 
 class Microblog 
 {
-    var $dataDirectory;
+    private $dataDirectory = '';
 
+    /**
+    * Constructor.
+    * @param $dataDirectory String Path to directory with post files.
+    * @return Null
+    **/
     public function __construct($dataDirectory)
     {
         if (empty($dataDirectory))
@@ -16,9 +21,14 @@ class Microblog
             throw new Exception('Data directory is not set');
         }
 
-        $this->dataDirectory = $dataDirectory;
+        $this->dataDirectory = rtrim($dataDirectory, '/') . '/';
     }
 
+    /** 
+    * Get list of all posts ordered by date.
+    * @param $reverseSort Bool sort array in ASC or DSC order. Default NULL is ASC.
+    * @return Array of Post class
+    **/
     public function getPosts($reverseSort = null)
     {
         $posts = array();
@@ -28,7 +38,7 @@ class Microblog
         {
             if (preg_match('/^(\d+)_(.*)\.([a-zA-Z]+)$/', $fileName, $matches))
             {
-                $posts[] = new Post(strtotime($matches[1]), $matches[2], $matches[3], $fileName);
+                $posts[] = new Post(strtotime($matches[1]), $matches[2], $matches[3], $this->dataDirectory . $fileName);
             }
         }
 
@@ -44,6 +54,11 @@ class Microblog
         return $posts;
     }
 
+    /**
+    * Loads all files from specified directory.
+    * @param $directory String Path to directory containig data files
+    * @return Array of file names
+    **/
     private function loadFiles($directory)
     {
         $files = array();
