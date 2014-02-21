@@ -9,14 +9,15 @@ class Post
     private $title;
     private $type;
     private $filename;
+    private $url;
 
     /**
-    * Constructor.
-    * @param $date Integer Date in epoch format. Default null.
-    * @param $title String Post title. Default null.
-    * @param $type String Type of file. This is used later for parsing and templating. Default null.
-    * @param $filename String Path to file storing this post.
-    **/
+     * Constructor.
+     * @param $date Integer Date in epoch format. Default null.
+     * @param $title String Post title. Default null.
+     * @param $type String Type of file. This is used later for parsing and templating. Default null.
+     * @param $filename String Path to file storing this post.
+     */
     public function __construct($date = null, $title = null, $type = null, $filename = null)
     {
         if ($date) $this->setDate($date);
@@ -32,7 +33,7 @@ class Post
 
     public function getTitle()
     {
-        return $this->title();
+        return $this->title;
     }
 
     public function getType()
@@ -43,6 +44,18 @@ class Post
     public function getFilename()
     {
         return $this->filename;
+    }
+
+    public function getUrl()
+    {
+        if ($this->url) {
+            return $this->url;
+        } else {
+            $url = $this->generateUrl();
+            $this->setUrl($url);
+
+            return $url;
+        }
     }
 
     public function setDate($date)
@@ -65,25 +78,40 @@ class Post
         $this->filename = $filename;
     }
 
-    /** 
-    * Read post content from file and return it in RAW format.
-    * @return String RAW data from file.
-    **/
-    public function getContent()
+    public function setUrl($url)
     {
-        if (!$this->getFilename())
-	{
-	    throw new Exception('No filename supplied. Cannot write file. Please use setFilename() first.');
-	}
-
-	if (!$content = file_get_contents($this->getFilename()))
-	{
-	    throw new Exception('Cannot open file \'' . $this->getFilename() . '\' for reading.');
-	}
-
-	return $content;
+        $this->url = $url;
     }
 
-}
+    /**
+     * Read post content from file and return it in RAW format.
+     * @return String RAW data from file.
+     */
+    public function getContent()
+    {
+        if (!$this->getFilename()) {
+            throw new Exception('No filename supplied. Cannot write file. Please use setFilename() first.');
+        }
 
-?>
+        if (!$content = file_get_contents($this->getFilename())) {
+            throw new Exception('Cannot open file \'' . $this->getFilename() . '\' for reading.');
+        }
+
+        return $content;
+    }
+
+    /**
+     * Convert title to string valid for URL
+     * @return String URL for title
+     */
+    private function generateUrl()
+    {
+        $url = $this->getTitle();
+        $url = preg_replace('~[^\\pL0-9_]+~u', '-', strtolower($url)); // substitutes anything but letters and numbers with separator
+        $url = trim($url, "-");
+        $url = iconv("utf-8", "us-ascii//TRANSLIT", $url); // TRANSLIT does the whole job
+        $url = preg_replace('~[^-A-Za-z0-9_]+~', '', $url); // keep only letters, numbers and separator
+
+        return $url;
+    }
+}

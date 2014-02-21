@@ -2,52 +2,46 @@
 namespace Neonus\Microblog;
 
 use Exception;
-use Neonus\Microblog\Post;
 
-
-class Microblog 
+class Microblog
 {
     private $dataDirectory = '';
 
     /**
     * Constructor.
+    *
     * @param $dataDirectory String Path to directory with post files.
     * @return Null
-    **/
+    */
     public function __construct($dataDirectory)
     {
-        if (empty($dataDirectory))
-        {
+        if (empty($dataDirectory)) {
             throw new Exception('Data directory is not set');
         }
 
         $this->dataDirectory = rtrim($dataDirectory, '/') . '/';
     }
 
-    /** 
+    /**
     * Get list of all posts ordered by date.
+    *
     * @param $reverseSort Bool sort array in ASC or DSC order. Default NULL is ASC.
     * @return Array of Post class
-    **/
+    */
     public function getPosts($reverseSort = null)
     {
         $posts = array();
         $fileNames = $this->loadFiles($this->dataDirectory);
 
-        foreach ($fileNames as $fileName)
-        {
-            if (preg_match('/^(\d+)_(.*)\.([a-zA-Z]+)$/', $fileName, $matches))
-            {
+        foreach ($fileNames as $fileName) {
+            if (preg_match('/^(\d+)_(.*)\.([a-zA-Z]+)$/', $fileName, $matches)) {
                 $posts[] = new Post(strtotime($matches[1]), $matches[2], $matches[3], $this->dataDirectory . $fileName);
             }
         }
 
-        if ($reverseSort)
-        {
+        if ($reverseSort) {
             usort($posts, array($this, "sortByDateReverse"));
-        }
-        else
-        {
+        } else {
             usort($posts, array($this, "sortByDate"));
         }
 
@@ -55,27 +49,42 @@ class Microblog
     }
 
     /**
+     * Search for post by specified URL.
+     *
+     * @param $url String URL to look for
+     * @return Post Instance of blog post object or FALSE if none found
+     */
+    public function getPostByUrl($url)
+    {
+        // first get array of URL of all posts, indexed by url
+        $posts = $this->getPostsIndexedByUrl();
+
+        // now check if such key exists in array
+        if (array_key_exists($url, $posts)) {
+            return $posts[$url];
+        }
+
+        return false;
+    }
+
+    /**
     * Loads all files from specified directory.
+    *
     * @param $directory String Path to directory containig data files
     * @return Array of file names
-    **/
+    */
     private function loadFiles($directory)
     {
         $files = array();
 
-        if ($dirHandle = opendir($directory))
-        {
-            while (false !== ($entry = readdir($dirHandle)))
-            {
-                if ($entry !== '.' && $entry !== '..')
-                {
+        if ($dirHandle = opendir($directory)) {
+            while (false !== ($entry = readdir($dirHandle))) {
+                if ($entry !== '.' && $entry !== '..') {
                     $files[] = $entry;
                 }
             }
             closedir($dirHandle);
-        }
-        else
-        {
+        } else {
             throw new Exception('Cannot open dir');
         }
 
@@ -84,8 +93,7 @@ class Microblog
 
     private function sortByDate($a, $b)
     {
-        if ($a->getDate() == $b->getDate())
-        {
+        if ($a->getDate() == $b->getDate()) {
             return 0;
         }
 
@@ -94,12 +102,27 @@ class Microblog
 
     private function sortByDateReverse($a, $b)
     {
-        if ($a->getDate() == $b->getDate())
-        {
+        if ($a->getDate() == $b->getDate()) {
             return 0;
         }
 
         return ($a->getDate() < $b->getDate()) ? 1 : -1;
     }
+
+    /**
+     * Get all posts in array indexed by URL
+     *
+     * @return Array of indexed posts. URL is key.
+     */
+    private function getPostsIndexedByUrl()
+    {
+        $posts = $this->getPosts();
+        $indexedPosts = array();
+
+        foreach ($posts as $post) {
+            $indexedPosts[$post->getUrl()] = $post;
+        }
+
+        return $indexedPosts;
+    }
 }
-?>
