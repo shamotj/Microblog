@@ -10,7 +10,7 @@ class Microblog
     /**
     * Constructor.
     *
-    * @param $dataDirectory String Path to directory with post files.
+    * @param string $dataDirectory Path to directory with post files.
     * @return Null
     */
     public function __construct($dataDirectory)
@@ -25,7 +25,7 @@ class Microblog
     /**
     * Get list of all posts ordered by date.
     *
-    * @param $reverseSort Bool sort array in ASC or DSC order. Default NULL is ASC.
+    * @param bool $reverseSort Sort array in ASC or DSC order. Default NULL is ASC.
     * @return Array of Post class
     */
     public function getPosts($reverseSort = null)
@@ -51,7 +51,7 @@ class Microblog
     /**
      * Search for post by specified URL.
      *
-     * @param $url String URL to look for
+     * @param string $url URL to look for
      * @return Post Instance of blog post object or FALSE if none found
      */
     public function getPostByUrl($url)
@@ -70,7 +70,7 @@ class Microblog
     /**
     * Loads all files from specified directory.
     *
-    * @param $directory String Path to directory containig data files
+    * @param string $directory Path to directory containig data files
     * @return Array of file names
     */
     private function loadFiles($directory)

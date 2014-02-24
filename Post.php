@@ -2,6 +2,9 @@
 namespace Neonus\Microblog;
 
 use \Exception;
+use \Michelf\MarkdownExtra;
+use \Texy;
+
 
 class Post
 {
@@ -13,10 +16,10 @@ class Post
 
     /**
      * Constructor.
-     * @param $date Integer Date in epoch format. Default null.
-     * @param $title String Post title. Default null.
-     * @param $type String Type of file. This is used later for parsing and templating. Default null.
-     * @param $filename String Path to file storing this post.
+     * @param integer $date Date in epoch format. Default null.
+     * @param string $title Post title. Default null.
+     * @param string $type Type of file. This is used later for parsing and templating. Default null.
+     * @param string $filename Path to file storing this post.
      */
     public function __construct($date = null, $title = null, $type = null, $filename = null)
     {
@@ -85,9 +88,10 @@ class Post
 
     /**
      * Read post content from file and return it in RAW format.
-     * @return String RAW data from file.
+     *
+     * @return string RAW data from file.
      */
-    public function getContent()
+    public function getContentRaw()
     {
         if (!$this->getFilename()) {
             throw new Exception('No filename supplied. Cannot write file. Please use setFilename() first.');
@@ -101,7 +105,58 @@ class Post
     }
 
     /**
+     * Read RAW content and process it with correspongind tool
+     *
+     * @return string Processed content
+     */
+    public function getContent()
+    {
+        $content = $this->getContentRaw();
+
+        switch ($this->getType())
+        {
+        case 'md':
+            $content = $this->processMarkdown($content);
+            break;
+        case 'texy':
+            $content = $this->processTexy($content);
+            break;
+        default:
+            // do nothing
+            break;
+        }
+        return $content;
+    }
+
+    /**
+     * Get excerpt from blog post.
+     *
+     * @param integer $sentenceLength How many sentences should be returned.
+     * @return string Blog exceprt.
+     */
+    public function getExcerpt($sentenceLength = 4)
+    {
+        $content = $this->getContent();
+        $content = strip_tags($content);
+        $i = 0;
+        $pos = 0;
+        while ($i < $sentenceLength)
+        {
+            $pos = strpos($content, '.', $pos);
+            $pos++;
+            $i++;
+        }
+
+        if ($pos) {
+            return substr($content, 0, $pos);
+        } else {
+            return $content;
+        }
+    }
+
+    /**
      * Convert title to string valid for URL
+     *
      * @return String URL for title
      */
     private function generateUrl()
@@ -113,5 +168,28 @@ class Post
         $url = preg_replace('~[^-A-Za-z0-9_]+~', '', $url); // keep only letters, numbers and separator
 
         return $url;
+    }
+
+    /**
+     * Process Markdown format to HTML.
+     *
+     * @param string $content Markdown string to convert
+     * @return string HTML result of conversion
+     */
+    private function processMarkdown($content)
+    {
+        return MarkdownExtra::defaultTransform($content);
+    }
+
+    /**
+     * Process Texy format to HTML.
+     *
+     * @param string $content Texy string to convert
+     * @return string HTML result of conversion
+     */
+    private function processTexy($content)
+    {
+        $texy = new Texy();
+        return $texy->process($content);
     }
 }
