@@ -35,7 +35,12 @@ class Microblog
 
         foreach ($fileNames as $fileName) {
             if (preg_match('/^(\d+)_(.*)\.([a-zA-Z]+)$/', $fileName, $matches)) {
-                $posts[] = new Post(strtotime($matches[1]), $matches[2], $matches[3], $this->dataDirectory . $fileName);
+
+		// if date could not be recognized, return plain number
+		if (!$date = strtotime($matches[1])) {
+		    $date = intval($matches[1]);
+		}
+                $posts[] = new Post($date, $matches[2], $matches[3], $this->dataDirectory . $fileName);
             }
         }
 
