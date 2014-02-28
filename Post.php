@@ -161,8 +161,9 @@ class Post
      */
     private function generateUrl()
     {
+	setlocale(LC_CTYPE, 'en_US.utf-8');
         $url = $this->getTitle();
-        $url = preg_replace('~[^\\pL0-9_]+~u', '-', strtolower($url)); // substitutes anything but letters and numbers with separator
+        $url = preg_replace('~[^\\pL0-9_]+~u', '-', mb_strtolower($url, 'utf-8')); // substitutes anything but letters and numbers with separator
         $url = trim($url, "-");
         $url = iconv("utf-8", "us-ascii//TRANSLIT", $url); // TRANSLIT does the whole job
         $url = preg_replace('~[^-A-Za-z0-9_]+~', '', $url); // keep only letters, numbers and separator
