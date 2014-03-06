@@ -34,7 +34,7 @@ class Microblog
         $fileNames = $this->loadFiles($this->dataDirectory);
 
         foreach ($fileNames as $fileName) {
-            if (preg_match('/^(\d+)_(.*)\.([a-zA-Z]+)$/', $fileName, $matches)) {
+            if (preg_match('/^([\d-]+)_(.*)\.([a-zA-Z]+)$/', $fileName, $matches)) {
 
 		// if date could not be recognized, return plain number
 		if (!$date = strtotime($matches[1])) {
