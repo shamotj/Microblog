@@ -125,6 +125,10 @@ class Post
             // do nothing
             break;
         }
+
+	// strip h1
+	$content = preg_replace('/<h1>[^<]*<\/h1>/', '', $content);
+
         return $content;
     }
 
